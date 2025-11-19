@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Search Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Mode Colors */
+            --bg-gradient-1: #667eea;
+            --bg-gradient-2: #764ba2;
+            --bg-gradient-3: #f093fb;
+            --bg-gradient-4: #4facfe;
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --input-bg: rgba(255, 255, 255, 0.08);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --accent-glow: rgba(102, 126, 234, 0.4);
+            --success-color: #4ade80;
+            --warning-color: #fbbf24;
+            --error-color: #f87171;
+        }
+
+        [data-theme="light"] {
+            --bg-gradient-1: #a8c0ff;
+            --bg-gradient-2: #fbc2eb;
+            --bg-gradient-3: #ffecd2;
+            --bg-gradient-4: #a1c4fd;
+            --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --text-primary: #1e293b;
+            --text-secondary: rgba(30, 41, 59, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.6);
+            --input-border: rgba(255, 255, 255, 0.9);
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --accent-glow: rgba(161, 196, 253, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(-45deg, var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3), var(--bg-gradient-4));
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Utility Classes --- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Navigation Bar --- */
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .theme-toggle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* --- Student Search Specific Styles --- */
+        .search-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+            display: flex;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .search-select {
+            padding: 0 2rem 0 1.5rem;
+            height: 60px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 0.8rem;
+            min-width: 140px;
+            transition: all 0.3s;
+        }
+        
+        .search-select option {
+            background: #333;
+            color: #fff;
+        }
+        
+        [data-theme="light"] .search-select {
+             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231e293b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        }
+
+        .search-select:focus {
+             box-shadow: 0 0 0 4px var(--accent-glow);
+             background-color: var(--input-bg);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-icon-input {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4rem;
+            opacity: 0.7;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .search-input {
+            padding-left: 3.5rem;
+            height: 60px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            width: 100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            background: var(--input-bg);
+        }
+
+        .student-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .student-card {
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-banner {
+            height: 100px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            position: relative;
+        }
+
+        .st-avatar-wrapper {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Updated Avatar Styling for Images */
+        .st-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #ffffff; /* White bg behind transparent SVGs */
+            border: 4px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .st-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .st-content {
+            padding: 3.5rem 1.5rem 1.5rem 1.5rem;
+            text-align: center;
+        }
+
+        .st-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.2rem; text-transform: uppercase; }
+        .st-roll { color: var(--text-secondary); font-family: monospace; font-size: 1rem; margin-bottom: 1.5rem; display: inline-block; padding: 0.2rem 0.8rem; background: var(--input-bg); border-radius: 20px; }
+        
+        .st-details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .st-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: var(--input-bg);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+
+        .st-row:hover {
+            transform: scale(1.02);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .st-label { color: var(--text-secondary); font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        .st-val { font-weight: 600; text-align: right; word-break: break-word; max-width: 60%; }
+        .insta-link { 
+            color: #fff; 
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none; 
+            font-weight: 800; 
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .student-results-grid { grid-template-columns: 1fr; }
+            .search-header h1 { font-size: 2rem; }
+            .search-container { flex-direction: column; gap: 1rem; }
+            .search-select { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="navbar">
+            <div class="theme-toggle glass" onclick="toggleTheme()" title="Toggle Theme">
+                <span id="themeIcon">🌙</span>
+            </div>
+        </div>
+
+        <div class="search-header fade-in">
+            <h1 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: 0 4px 30px rgba(0,0,0,0.2);">Student Directory</h1>
+            <p style="color: var(--text-secondary); font-size: 1.1rem;">Search for anyone in the campus database</p>
+        </div>
+        
+        <div class="search-container fade-in">
+            <select id="searchType" class="search-select" onchange="updatePlaceholder()">
+                <option value="name">Name</option>
+                <option value="roll">Roll No</option>
+            </select>
+
+            <div class="search-input-wrapper">
+                <span class="search-icon-input">🔍</span>
+                <input type="text" id="studentSearchInput" class="search-input" placeholder="Enter Student Name..." oninput="searchStudent()">
+            </div>
+        </div>
+
+        <div id="searchResults" class="student-results-grid fade-in">
+            <div class="glass" style="padding: 3rem; grid-column: 1/-1; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <div style="font-size: 3rem;">👋</div>
+                <p>Select a search type and start typing to see results.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- Theme Logic --- */
+        let currentTheme = 'dark';
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', currentTheme);
+            document.getElementById('themeIcon').textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        /* --- Student Data --- */
+        const studentDatabase = [
+            { name: "ANANYA BATRA", roll: "24051681", section: "B24", mobile: "8817931897", home: "BILASPUR, CHATTISGARH" },
+            { name: "ANANYA ROY", roll: "24051682", section: "B24", mobile: "9883185384", home: "WEST BENGAL" },
+            { name: "AYUSH KUMAR", roll: "24051700", section: "B24", mobile: "9508315057", home: "PATNA, BIHAR" },
+            { name: "AADYA MEHUL", roll: "24051675", section: "B24", mobile: "9871504448", home: "WEST BENGAL" },
+            { name: "AARUSH AANAND", roll: "24051676", section: "B24", mobile: "7004048759", home: "UTTAR PRADESH" },
+            { name: "ABHIMANYU PAUL", roll: "24051678", section: "B24", mobile: "7076805524", home: "ASANSOL" },
+            { name: "ADITYA", roll: "24051679", section: "B24", mobile: "7070331807", home: "PATNA, BIHAR" },
+            { name: "ANANYA ACHARYA", roll: "24051680", section: "B24", mobile: "9932001213", home: "KOLKATA" },
+            { name: "ANIKET DWIVEDY", roll: "24051683", section: "B24", mobile: "8260931039", home: "ODISHA" },
+            { name: "ANUBHAB MAJUMDER", roll: "24051684", section: "B24", mobile: "6289117057", home: "WEST BENGAL" },
+            { name: "ANULIPI BHUNIA", roll: "24051685", section: "B24", mobile: "7029649259", home: "WEST BENGAL" },
+            { name: "ANUSHA SINGH", roll: "24051686", section: "B24", mobile: "9326058289", home: "BIHAR" },
+            { name: "ANUSHKA BARAT", roll: "24051687", section: "B24", mobile: "9151762493", home: "JHANSI, UTTAR PRADESH" },
+            { name: "ANUSKA PATI", roll: "24051688", section: "B24", mobile: "9679987148", home: "WEST BENGAL" },
+            { name: "AREEN DUBEY", roll: "24051689", section: "B24", mobile: "7803061470", home: "ODISHA" },
+            { name: "ARIHANT JAIN", roll: "24051690", section: "B24", mobile: "6394312326", home: "UTTAR PRADESH" },
+            { name: "ARNABI DAS", roll: "24051691", section: "B24", mobile: "8597602082", home: "KHARAGPUR, WEST BENGAL" },
+            { name: "ARYAN SOY", roll: "24051692", section: "B24", mobile: "8789518127", home: "JHARKHAND" },
+            { name: "ASHUTOSH RANJAN", roll: "24051693", section: "B24", mobile: "7369062084", home: "PATNA, BIHAR", insta: "harshbks" }, // done
+            { name: "ASMITA GHOSH", roll: "24051694", section: "B24", mobile: "8918526556", home: "KHARAGPUR, WEST BENGAL", insta: "asmi_8217" }, // done
+            { name: "ASUTOSH DASH", roll: "24051695", section: "B24", mobile: "7655043260", home: "ODISHA" },
+            { name: "AVINASH KUMAR SAHOO", roll: "24051696", section: "B24", mobile: "8583055700", home: "WEST BENGAL" },
+            { name: "AYUSH KUMAR", roll: "24051698", section: "B24", mobile: "9142169264", home: "RANCHI, JHARKHAND" , insta: "aayush.ik"}, // done
+            { name: "AYUSH KUMAR", roll: "24051699", section: "B24", mobile: "9116711410", home: "GAYA, BIHAR" },
+            { name: "AYUSH KUMAR SINGH", roll: "24051701", section: "B24", mobile: "7307641826", home: "VARANASI, UTTAR PRADESH" },
+            { name: "BANTY SINGH", roll: "24051703", section: "B24", mobile: "8210438134", home: "RANCHI, JHARKHAND" },
+            { name: "DEBOPOM ROY CHOWDHURY", roll: "24051705", section: "B24", mobile: "8582875886", home: "WEST BENGAL" },
+            { name: "HARE RAM SHARMA", roll: "24051706", section: "B24", mobile: "7261818202", home: "BIHAR" },
+            { name: "HRISHIKA BISWAS", roll: "24051708", section: "B24", mobile: "9706741025", home: "ASSAM" },
+            { name: "INDRANEEL MUKHERJEE", roll: "24051709", section: "B24", mobile: "6207297529", home: "N/A" },
+            { name: "ISHITA KATARIA", roll: "24051710", section: "B24", mobile: "9031477055", home: "SAMASTIPUR, BIHAR" },
+            { name: "JASHVEER SHARMA", roll: "24051711", section: "B24", mobile: "9980583934", home: "N/A" },
+            { name: "JIGYANSA JENA", roll: "24051712", section: "B24", mobile: "8018610741", home: "ODISHA" },
+            { name: "KARTIKEY SINGH", roll: "24051713", section: "B24", mobile: "7724836067", home: "INDORE, MADHYA PRADESH" },
+            { name: "MAHIR CHITTORA", roll: "24051714", section: "B24", mobile: "7976345308", home: "KOTA, RAJASTHAN" },
+            { name: "MD AYAAN", roll: "24051715", section: "B24", mobile: "9798107814", home: "RANCHI" },
+            { name: "N JIJNASU JIJNATMA", roll: "24051716", section: "B24", mobile: "9861341807", home: "ODISHA" },
+            { name: "NILOFAR NADEEM", roll: "24052399", section: "B24", mobile: "7608084633", home: "N/A" },
+            { name: "NITIKA", roll: "24051717", section: "B24", mobile: "9653512744", home: "RAJASTHAN" },
+            { name: "NIYATI ARORA", roll: "24051718", section: "B24", mobile: "9873443084", home: "DELHI" },
+            { name: "PRAKRITI PAWAN", roll: "24051719", section: "B24", mobile: "8709182524", home: "RANCHI" },
+            { name: "PRANSHU NANDAN", roll: "24051720", section: "B24", mobile: "9419044285", home: "N/A" },
+            { name: "PRATEEK PRIYADARSHI", roll: "24051721", section: "B24", mobile: "8984070905", home: "ODISHA" },
+            { name: "PRATHAMESH PRATEEK PATRA", roll: "24051722", section: "B24", mobile: "8249140401", home: "ODISHA" },
+            { name: "PRATYUSH KUMAR PATI", roll: "24051723", section: "B24", mobile: "9937652400", home: "ODISHA" },
+            { name: "PRAYAS MANNA", roll: "24051724", section: "B24", mobile: "7091243564", home: "ODISHA" },
+            { name: "PRITI BARMAN", roll: "24051726", section: "B24", mobile: "6001036611", home: "ASSAM" },
+            { name: "PRIYOMSIS DAS", roll: "24051727", section: "B24", mobile: "8895921968", home: "ODISHA" },
+            { name: "PUNAM ROY", roll: "24051728", section: "B24", mobile: "8159926667", home: "DIGHA, WEST BENGAL" },
+            { name: "RAJATAVA DAS", roll: "24051729", section: "B24", mobile: "9903197746", home: "KOLKATA, WEST BENGAL" },
+            { name: "RIDDHIMA BOSE", roll: "24051730", section: "B24", mobile: "9830787882", home: "KOLKATA, WEST BENGAL" },
+            { name: "SAKSHAM", roll: "24051732", section: "B24", mobile: "9031689930", home: "PATNA, BIHAR" },
+            { name: "SAMRIDDHI KAPOOR", roll: "24051733", section: "B24", mobile: "9711471411", home: "DEHRADUN, HIMACHAL PRADESH" },
+            { name: "SAPTARSHI SEN", roll: "24051734", section: "B24", mobile: "9674589060", home: "WEST BENGAL" },
+            { name: "SAYAM JAIN", roll: "24051735", section: "B24", mobile: "8167577022", home: "WEST BENGAL" },
+            { name: "SHASHANK SHEKHAR PATNAIK", roll: "24051736", section: "B24", mobile: "6371788534", home: "ODISHA" },
+            { name: "SHILPA KUMARI", roll: "24051737", section: "B24", mobile: "8210225626", home: "DHANBAD, JAHRKHAND" },
+            { name: "SHOURYA KUMAR", roll: "24051738", section: "B24", mobile: "7061218449", home: "BIHAR" },
+            { name: "SHOVAN KRISHNA PATNAIK", roll: "24051739", section: "B24", mobile: "7077617470", home: "ODISHA" },
+            { name: "SHREEKANT SINGH", roll: "24051740", section: "B24", mobile: "9873914665", home: "N/A" },
+            { name: "SHUBHAM MITRA", roll: "24051741", section: "B24", mobile: "8902556025", home: "N/A" },
+            { name: "SOHAM MUKHERJEE", roll: "24051742", section: "B24", mobile: "6290641137", home: "N/A" },
+            { name: "SOMLAGNA GHOSH", roll: "24052401", section: "B24", mobile: "7029243799", home: "N/A" },
+            { name: "SOUNAK DAS", roll: "24051743", section: "B24", mobile: "7679462465", home: "N/A" },
+            { name: "SUBHRODEEP CHOUDHURY", roll: "24051744", section: "B24", mobile: "9641734660", home: "N/A" },
+            { name: "SUPRIYO PRAMANIK", roll: "24051745", section: "B24", mobile: "9122545013", home: "N/A" },
+            { name: "SURISETTY SAI AKHILESH", roll: "24051746", section: "B24", mobile: "9903094878", home: "N/A" },
+            { name: "TRISHA JAISWAL", roll: "24051747", section: "B24", mobile: "9477964779", home: "N/A" },
+            { name: "VISHAL PAL", roll: "24051748", section: "B24", mobile: "8011823136", home: "N/A" },
+            { name: "YEAS GOENKA", roll: "24052718", section: "B24", mobile: "8116642009", home: "N/A" },
+            { name: "YUVRAJ DEY", roll: "24051749", section: "B24", mobile: "8779391871", home: "N/A" },
+            { name: "JIYA JAISHWAL", roll: "24051778", section: "B25", mobile: "8100187122", home: "N/A" },
+            { name: "AADITYA KUMAR SINGH", roll: "24051750", section: "B25", mobile: "8239412105", home: "N/A" },
+            { name: "ABHAY VIRENDRA KUMAR SINGH", roll: "24051751", section: "B25", mobile: "9328810411", home: "N/A" },
+            { name: "ABHISHEK GUPTA", roll: "24051752", section: "B25", mobile: "7699995027", home: "N/A" },
+            { name: "ADITYA RAJ", roll: "24051753", section: "B25", mobile: "7488005488", home: "N/A" },
+            { name: "AISHWARYA PRADHAN", roll: "24051756", section: "B25", mobile: "8984199514", home: "WEST BENGAL" },
+            { name: "AKALPYA KHARE", roll: "24051757", section: "B25", mobile: "8004475747", home: "GHAZIABAD" },
+            { name: "AMULYA ARYAN", roll: "24051758", section: "B25", mobile: "7488041494", home: "N/A" },
+            { name: "ANKUSH DATTA", roll: "24051760", section: "B25", mobile: "8798639944", home: "N/A" },
+            { name: "ANMOL PANDEY", roll: "24051761", section: "B25", mobile: "N/A", home: "N/A" },
+            { name: "ANURAN PAUL", roll: "24051762", section: "B25", mobile: "N/A", home: "N/A" },
+            { name: "ARIJIT GHOSH", roll: "24051763", section: "B25", mobile: "9875425762", home: "N/A" }
+        ];
+
+        /* --- Update Placeholder Logic --- */
+        function updatePlaceholder() {
+            const type = document.getElementById('searchType').value;
+            const input = document.getElementById('studentSearchInput');
+            input.value = ''; // Clear input on type change
+            document.getElementById('searchResults').innerHTML = `
+                <div class="glass" style="padding: 3rem; grid-column: 1/-1; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                    <div style="font-size: 3rem;">👋</div>
+                    <p>Start typing a ${type === 'name' ? 'Name' : 'Roll Number'} to see results.</p>
+                </div>`;
+
+            if (type === 'name') {
+                input.placeholder = "Enter Student Name...";
+            } else {
+                input.placeholder = "Enter Roll Number (e.g. 2405...)";
+            }
+        }
+
+        /* --- Search Logic --- */
+        function searchStudent() {
+            const query = document.getElementById('studentSearchInput').value.toLowerCase().trim();
+            const searchType = document.getElementById('searchType').value; // Get 'name' or 'roll'
+            const container = document.getElementById('searchResults');
+            
+            if (query.length === 0) {
+                container.innerHTML = `
+                    <div class="glass" style="padding: 3rem; grid-column: 1/-1; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <div style="font-size: 3rem;">👋</div>
+                        <p>Start typing a ${searchType === 'name' ? 'Name' : 'Roll Number'} to see results.</p>
+                    </div>`;
+                return;
+            }
+
+            // Validation logic based on type
+            if (searchType === 'roll') {
+                 // Check if input is numeric
+                 const isNumeric = /^\d+$/.test(query);
+                 if (!isNumeric) {
+                     container.innerHTML = `
+                        <div class="glass" style="padding: 3rem; grid-column: 1/-1; text-align: center; color: var(--warning-color); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                            <div style="font-size: 3rem;">🔢</div>
+                            <p>Roll numbers usually contain digits only.</p>
+                        </div>`;
+                    return;
+                 }
+                 
+                 // Ensure at least 6 digits
+                 if (query.length < 6) {
+                     container.innerHTML = `
+                        <div class="glass" style="padding: 3rem; grid-column: 1/-1; text-align: center; color: var(--warning-color); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                            <div style="font-size: 3rem;">⏳</div>
+                            <p>Please enter at least 6 digits to search by Roll Number...</p>
+                        </div>`;
+                    return;
+                 }
+
+            } else if (searchType === 'name') {
+                if (query.length < 3) {
+                    container.innerHTML = `
+                        <div class="glass" style="padding: 3rem; grid-column: 1/-1; text-align: center; color: var(--warning-color); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                            <div style="font-size: 3rem;">⌨️</div>
+                            <p>Please enter at least 3 characters to search by Name...</p>
+                        </div>`;
+                    return;
+                }
+            }
+
+            // Filtering Logic
+            const results = studentDatabase.filter(s => {
+                if (searchType === 'name') {
+                    return s.name.toLowerCase().includes(query);
+                } else if (searchType === 'roll') {
+                    return s.roll.includes(query);
+                }
+                return false;
+            });
+
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="glass" style="padding: 3rem; grid-column: 1/-1; text-align: center; color: var(--error-color); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <div style="font-size: 3rem;">🤷‍♂️</div>
+                        <p>No students found matching "${query}"</p>
+                    </div>`;
+                return;
+            }
+
+            // Rendering Logic with conditional Instagram check
+            container.innerHTML = results.map(s => {
+                const instaHandle = s.insta ? s.insta : s.name.split(' ')[0].toLowerCase() + '_' + s.roll.slice(-4);
+                
+                return `
+                <div class="student-card glass fade-in">
+                    <div class="card-banner"></div>
+                    <div class="st-avatar-wrapper">
+                        <div class="st-avatar">
+                             <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=${s.roll}" alt="Student Avatar" loading="lazy">
+                        </div>
+                    </div>
+                    <div class="st-content">
+                        <h3 class="st-name">${s.name}</h3>
+                        <span class="st-roll">${s.roll}</span>
+                        
+                        <div class="st-details-list">
+                            <div class="st-row">
+                                <span class="st-label">🏫 Section</span>
+                                <span class="st-val">${s.section}</span>
+                            </div>
+                            <div class="st-row">
+                                <span class="st-label">📱 Mobile</span>
+                                <span class="st-val">${s.mobile}</span>
+                            </div>
+                            <div class="st-row">
+                                <span class="st-label">📸 Instagram</span>
+                                <span class="st-val">
+                                    <a href="https://instagram.com/${instaHandle}" target="_blank" rel="noopener noreferrer" class="insta-link">
+                                        @${instaHandle}
+                                    </a>
+                                </span>
+                            </div>
+                            <div class="st-row">
+                                <span class="st-label">🏠 Hometown</span>
+                                <span class="st-val">${s.home}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+    </script>
+</body>
+</html>
